@@ -7,28 +7,19 @@ const apigw = new aws.apigatewayv2.Api("httpApiGateway", {
     protocolType: "HTTP",
 });
 
-const f = new aws.lambda.CallbackFunction<any, any>("helloWorld", {
+const route = createLambdaRoute(apigw, new aws.lambda.CallbackFunction("helloWorld", {
     runtime: Runtime.NodeJS18dX,
-    callback: (req, ctx) => Promise.resolve({
+    callback: async (req, ctx) => ({
         message: "Hello JavaLand!",
         req,
         ctx
     }),
-});
-
-const route = createLambdaRoute(apigw, f);
+}));
 
 const stage = new aws.apigatewayv2.Stage("apiStage", {
     apiId: apigw.id,
     name: pulumi.getStack(),
-    routeSettings: [
-        {
-            routeKey: route.routeKey,
-            throttlingBurstLimit: 5000,
-            throttlingRateLimit: 10000,
-        },
-    ],
     autoDeploy: true,
-}, { dependsOn: [route] });
+});
 
 export const endpoint = pulumi.interpolate`${apigw.apiEndpoint}/${stage.name}`;
