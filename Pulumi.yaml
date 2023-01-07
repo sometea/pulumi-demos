@@ -1,0 +1,3 @@
+name: pulumi-demos
+runtime: nodejs
+description: Some pulumi demos for JavaLand
